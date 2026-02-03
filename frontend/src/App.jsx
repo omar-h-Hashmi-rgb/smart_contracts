@@ -27,7 +27,24 @@ function App() {
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
+        // Request account access
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        // Force Switch to Sepolia (Chain ID: 0xaa36a7)
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xaa36a7' }],
+          });
+        } catch (switchError) {
+          // This error code indicates that the chain has not been added to MetaMask.
+          if (switchError.code === 4902) {
+            toast.error("Please add Sepolia Network to MetaMask.");
+          } else {
+            console.error(switchError);
+          }
+        }
+
         setAccount(accounts[0]);
         const tempProvider = new ethers.providers.Web3Provider(window.ethereum);
         setProvider(tempProvider);
